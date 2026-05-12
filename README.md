@@ -6,8 +6,8 @@ Single-file Flask app. Pure inline-SVG sparklines. No JS chart library. Renders 
 
 Built originally for a Raspberry Pi 5 + Adafruit Ultimate GPS HAT stratum-1 server, but works on any Linux box running chrony — desktop, server, or SBC.
 
-[![dashboard screenshot placeholder](docs/screenshot.png)
-](https://github.com/nalditopr/chrony-dashboard)
+
+
 ## Features
 
 - **Live stat cards** — stratum, reference, system offset, RMS offset, skew, root dispersion, GPS fix mode, satellites, HDOP, LAN client count, packets served / dropped.
