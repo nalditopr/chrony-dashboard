@@ -1,0 +1,25 @@
+[Unit]
+Description=chrony-dashboard web UI
+After=network-online.target chrony.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Change User/Group to the unprivileged account that should run the dashboard.
+# This account must have passwordless sudo for `chronyc serverstats` and
+# `chronyc clients` if you want the client list / server stats panels populated.
+User=chrony-dashboard
+Group=chrony-dashboard
+WorkingDirectory=/opt/chrony-dashboard
+ExecStart=/usr/bin/python3 /opt/chrony-dashboard/app.py
+Restart=on-failure
+RestartSec=3
+
+# Optional: customize via environment
+# Environment=CHRONY_DASHBOARD_TITLE=my time server
+# Environment=CHRONY_DASHBOARD_FOOTER=internal use only
+# Environment=CHRONY_DASHBOARD_PORT=8080
+# Environment=CHRONY_DASHBOARD_HOST=::
+
+[Install]
+WantedBy=multi-user.target
