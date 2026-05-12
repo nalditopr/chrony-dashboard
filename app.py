@@ -130,10 +130,15 @@ def parse_sources(text):
         rest = line[2:].split()
         if len(rest) < 7:
             continue
+        name = rest[0]
+        # If chronyc -n returned a bare IP for an upstream source, resolve once
+        # (cached for process lifetime — never re-queried).
+        if looks_like_ip(name):
+            name = resolve_hostname(name)
         try:
             rows.append({
                 "marker": marker,
-                "name": rest[0],
+                "name": name,
                 "stratum": int(rest[1]),
                 "poll": int(rest[2]),
                 "reach": rest[3],
@@ -209,12 +214,17 @@ def humanize(n):
 
 
 def sample_once():
+    # `-n` suppresses chronyc's per-invocation reverse DNS lookups. Without it
+    # chronyc fires a PTR query for every entry every 10 s and pegs your resolver
+    # (~260k ip6.arpa queries/day with a couple dozen v6 clients lacking PTRs).
+    # We do hostname resolution ourselves with an in-process cache below, so each
+    # unique IP is resolved exactly once for the life of the service.
     tracking_raw = run("chronyc tracking")
     tracking = parse_kv(tracking_raw)
-    sources = run("chronyc sources -v")
-    sourcestats = run("chronyc sourcestats -v")
+    sources = run("chronyc -n sources -v")
+    sourcestats = run("chronyc -n sourcestats -v")
     serverstats = run("sudo -n chronyc serverstats 2>/dev/null") or "(needs sudo)"
-    clients = run("sudo -n chronyc clients 2>/dev/null") or "(needs sudo)"
+    clients = run("sudo -n chronyc -n clients 2>/dev/null") or "(needs sudo)"
     tpv, sky = gps_snapshot()
     uptime = run("uptime -p")
 
