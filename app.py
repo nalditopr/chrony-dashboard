@@ -66,7 +66,11 @@ def first_float(s):
 
 
 def gps_snapshot():
-    raw = run("timeout 4 gpspipe -w -n 30")
+    # gpsd emits one TPV+SKY per second; a multi-GNSS module also adds GST etc.
+    # Ask for 12 messages with a 6s shell deadline; Python timeout gets +2s
+    # slack so it never preempts the shell's clean exit. That guarantees we
+    # see a TPV/SKY pair as long as gpsd is producing one.
+    raw = run("timeout 6 gpspipe -w -n 12", timeout=8)
     tpv, sky = {}, {}
     for line in raw.splitlines():
         try:
